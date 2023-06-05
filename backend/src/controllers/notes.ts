@@ -32,7 +32,7 @@ export const getNote: RequestHandler = async (req, res, next) => {
   }
 };
 
-interface CreateNoteBody {
+interface noteBody {
   title?: string;
   text?: string;
 }
@@ -40,7 +40,7 @@ interface CreateNoteBody {
 export const createNote: RequestHandler<
   unknown,
   unknown,
-  CreateNoteBody,
+  noteBody,
   unknown
 > = async (req, res, next) => {
   const title = req.body.title;
@@ -57,6 +57,64 @@ export const createNote: RequestHandler<
     });
 
     res.status(201).json(newNote);
+  } catch (error) {
+    next(error);
+  }
+};
+
+interface noteParams {
+  noteId: string;
+}
+
+export const updateNote: RequestHandler<
+  noteParams,
+  unknown,
+  noteBody,
+  unknown
+> = async (req, res, next) => {
+  const noteId = req.params.noteId;
+  const newTitle = req.body.title;
+  const newText = req.body.text;
+
+  try {
+    if (!mongoose.isValidObjectId(noteId)) {
+      throw createHttpError(404, "Not a valid object ID");
+    }
+    if (!newTitle) {
+      throw createHttpError(400, "Note must have a title!");
+    }
+
+    const note = await NoteModel.findById(noteId).exec();
+    if (!note) {
+      throw createHttpError(404, "Note not found");
+    }
+
+    note.title = newTitle;
+    note.text = newText;
+
+    const updatedNote = await note.save();
+
+    res.status(200).json(updatedNote);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteNote: RequestHandler = async (req, res, next) => {
+  const noteId = req.params.noteId;
+  try {
+    if (!mongoose.isValidObjectId(noteId)) {
+      throw createHttpError(404, "Not a valid object ID");
+    }
+
+    const note = await NoteModel.findById(noteId).exec();
+
+    if (!note) {
+      throw createHttpError(404, "Note not found");
+    }
+
+    await NoteModel.findByIdAndDelete(noteId);
+    res.sendStatus(204);
   } catch (error) {
     next(error);
   }
