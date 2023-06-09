@@ -4,5 +4,9 @@
 			"path": "../../.."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"editor.fontFamily": "Fira Code",
+		"editor.fontLigatures": true,
+		"synthwave84.brightness": 0.05
+	}
 }
